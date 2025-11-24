@@ -5,15 +5,33 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Local DOTs",
+      "name": "Local DotsOem",
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "program": "examples/main.py",
       "args": [
-        "--experiment", "project=Test", "type=DOTs", "trial=0",
-        "--config_file", "examples/dots.yml",
-        "--out_dir", "examples/"
+        "--experiment", "project=Test", "type=DotsOem", "trial=0",
+        "--config_file", "examples/dotsoem.yml",
+        "--out_dir", "examples/data"
+      ],
+      "env": {
+        "PYTHONPATH": "${workspaceFolder}"
+      },
+      "console": "integratedTerminal",
+      "subProcess": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Local DotsBleak",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "program": "examples/main.py",
+      "args": [
+        "--experiment", "project=Test", "type=DotsBleak", "trial=0",
+        "--config_file", "examples/dotsbleak.yml",
+        "--out_dir", "examples/data"
       ],
       "env": {
         "PYTHONPATH": "${workspaceFolder}"
