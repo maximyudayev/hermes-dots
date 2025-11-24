@@ -30,13 +30,12 @@ classifiers = [
 ]
 dependencies = [
   "pysio-hermes",
-#   "pysio-pyimu-dots"
+  "pysio-pyimu-dots"
 ]
 
 [project.optional-dependencies]
-movella = [
+oem = [
   "numpy==1.26.*",
-  # "movelladot_pc_sdk"
 ]
 
 [tool.setuptools.dynamic]

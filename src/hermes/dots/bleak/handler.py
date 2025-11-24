@@ -32,7 +32,6 @@ import movelladot_pc_sdk as mdda
 from collections import OrderedDict
 
 from hermes.dots.bleak.constants import MOVELLA_LOGGING_MODE, MOVELLA_PAYLOAD_MODE
-from hermes.dots.bleak.user_settings import *
 from hermes.datastructures.fifo import TimestampAlignedFifoBuffer
 from hermes.utils.time_utils import get_time
 
