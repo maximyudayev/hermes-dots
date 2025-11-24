@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "pysio-hermes-dots"
 dynamic = ["version"]
-requires-python = ">=3.7"
+requires-python = ">=3.7,<3.11"
 authors = [
   { name="Maxim Yudayev", email="maxim.yudayev@gmail.com" },
   { name="e-Media Research Lab @ KU Leuven" },
@@ -30,11 +30,6 @@ classifiers = [
 ]
 dependencies = [
   "pysio-hermes",
-  "pysio-pyimu-dots"
-]
-
-[project.optional-dependencies]
-oem = [
   "numpy==1.26.*",
 ]
 
