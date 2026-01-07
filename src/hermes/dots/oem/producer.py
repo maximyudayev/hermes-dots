@@ -54,6 +54,7 @@ class DotsOemProducer(Producer):
         sampling_rate_hz: int = 60,
         num_joints: int = 5,
         is_sync_devices: bool = True,
+        timesteps_before_stale: int = 100,
         payload_mode: str = "RateQuantitieswMag",
         filter_profile: str = "General",
         port_pub: str = PORT_BACKEND,
@@ -63,13 +64,13 @@ class DotsOemProducer(Producer):
         timesteps_before_solidified: int = 0,
         **_
     ):
-
         # Initialize any state that the sensor needs.
         self._num_joints = num_joints
         self._master_device = master_device
         self._payload_mode = payload_mode
         self._filter_profile = filter_profile
         self._is_sync_devices = is_sync_devices
+        self._timesteps_before_stale = timesteps_before_stale
         self._device_mapping = device_mapping
         self._mac_mapping = mac_mapping
         self._row_id_mapping = OrderedDict(
@@ -116,6 +117,7 @@ class DotsOemProducer(Producer):
             payload_mode=self._payload_mode,
             filter_profile=self._filter_profile,
             is_sync_devices=self._is_sync_devices,
+            timesteps_before_stale=self._timesteps_before_stale,
         )
         # Keep reconnecting until success
         while not self._handler.initialize():
