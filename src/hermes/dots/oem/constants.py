@@ -141,7 +141,7 @@ MOVELLA_PAYLOAD_MODE = {
     "CompleteEuler": MovellaPayloadTuple(
         num_bytes=28,
         payload_mode=MovellaPayloadEnum.COMPLETE_EULER,
-        methods=foo(["quaternion", "free_acceleration"]),
+        methods=foo(["euler", "free_acceleration"]),
     ),
     "OrientationQuaternion": MovellaPayloadTuple(
         num_bytes=20,

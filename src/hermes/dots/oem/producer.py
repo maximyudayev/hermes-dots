@@ -54,6 +54,8 @@ class DotsOemProducer(Producer):
         sampling_rate_hz: int = 60,
         num_joints: int = 5,
         is_sync_devices: bool = True,
+        logging_mode: str = "Euler",
+        is_enable_logging: bool = False,
         timesteps_before_stale: int = 100,
         payload_mode: str = "RateQuantitieswMag",
         filter_profile: str = "General",
@@ -70,6 +72,8 @@ class DotsOemProducer(Producer):
         self._payload_mode = payload_mode
         self._filter_profile = filter_profile
         self._is_sync_devices = is_sync_devices
+        self._logging_mode = logging_mode
+        self._is_enable_logging = is_enable_logging
         self._timesteps_before_stale = timesteps_before_stale
         self._device_mapping = device_mapping
         self._mac_mapping = mac_mapping
@@ -115,8 +119,10 @@ class DotsOemProducer(Producer):
             master_device=self._master_device,
             sampling_rate_hz=int(self._sampling_rate_hz),
             payload_mode=self._payload_mode,
+            logging_mode=self._logging_mode,
             filter_profile=self._filter_profile,
             is_sync_devices=self._is_sync_devices,
+            is_enable_logging=self._is_enable_logging,
             timesteps_before_stale=self._timesteps_before_stale,
         )
         # Keep reconnecting until success
