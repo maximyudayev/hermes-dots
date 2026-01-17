@@ -87,7 +87,7 @@ MOVELLA_DATA_GET_METHODS = {
         type_str="float32",
     ),
     "euler": MovellaDataGetter(
-        func=lambda packet: packet.orientationEuler(),
+        func=lambda packet: np.array([packet.orientationEuler().x(), packet.orientationEuler().y(), packet.orientationEuler().z()], dtype=np.float32),
         n_dim=(3,),
         dtype=np.float32,
         type_str="float32",
@@ -220,7 +220,6 @@ MOVELLA_PAYLOAD_MODE = {
     ),
 }
 
-MOVELLA_PAYLOAD_MODE["ExtendedQuaternion"]["methods"]
 # NOTE: Movella sets different internal low-pass filter for different activities:
 #         'General' - general human daily activities.
 #         'Dynamic' - high-pace activities (e.g. sprints).
