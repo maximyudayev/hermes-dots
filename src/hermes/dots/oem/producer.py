@@ -40,12 +40,9 @@ from hermes.dots.oem.handler import MOVELLA_PAYLOAD_MODE, MovellaFacade
 class DotsOemProducer(Producer):
     """A class for streaming Dots IMU data."""
 
-    @classmethod
-    def _log_source_tag(cls) -> str:
-        return "dots"
-
     def __init__(
         self,
+        topic: str,
         host_ip: str,
         logging_spec: LoggingSpec,
         device_mapping: dict[str, str],
@@ -95,6 +92,7 @@ class DotsOemProducer(Producer):
         # Abstract class will call concrete implementation's creation methods
         #   to build the data structure of the sensor
         super().__init__(
+            topic=topic,
             host_ip=host_ip,
             stream_out_spec=stream_out_spec,
             logging_spec=logging_spec,
@@ -174,7 +172,7 @@ class DotsOemProducer(Producer):
                     data["toa_s"][id] = packet["toa_s"]
                     data["counter"][id] = packet["counter"]
 
-            tag: str = "%s.data" % self._log_source_tag()
+            tag: str = "%s.data" % self.topic
             self._publish(tag, process_time_s=process_time_s, data={"dots-imu": data})
         elif not self._is_continue_capture:
             # If triggered to stop and no more available data, send empty 'END' packet and join.
