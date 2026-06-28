@@ -26,26 +26,28 @@
 # ############
 
 from collections import OrderedDict
+from typing import Optional
 
-from hermes.base.stream import Stream
+from hermes.base.data_container import DataContainer
 
 from hermes.dots.oem.handler import MOVELLA_PAYLOAD_MODE
 from hermes.dots.oem.constants import MOVELLA_STATUS_MASK
 
 
-class DotsOemStream(Stream):
-    """A structure to store DOTs stream's data."""
+class DotsOemDataContainer(DataContainer):
+    """A structure to store DOTs Node's data."""
 
     def __init__(
         self,
         device_mapping: dict[str, str],
         num_joints: int = 5,
-        sampling_rate_hz: int = 60,
-        payload_mode: str = "RateQuantitieswMag",
-        timesteps_before_solidified: int = 0,
-        update_interval_ms: int = 100,
-        transmission_delay_period_s: int | None = None,
-        **_
+        buf_len: Optional[int] = 6000,
+        sampling_rate_hz: Optional[int] = 60,
+        payload_mode: Optional[str] = "RateQuantitieswMag",
+        timesteps_before_solidified: Optional[int] = 0,
+        update_interval_ms: Optional[int] = 100,
+        transmission_delay_period_s: Optional[int] = None,
+        **_,
     ) -> None:
         super().__init__()
         self._num_joints = num_joints
@@ -64,61 +66,66 @@ class DotsOemStream(Stream):
         self._define_data_notes()
 
         for data_name, data_getter in self._data_getters.items():
-            self.add_stream(
-                device_name="dots-imu",
-                stream_name=data_name,
+            self.add_channel(
+                bundle_name="dots_imu",
+                channel_name=data_name,
                 data_type=data_getter["type_str"],
-                sample_size=(self._num_joints, *data_getter["n_dim"]),
+                buf_len=buf_len,
+                sample_size=[self._num_joints, *data_getter["n_dim"]],
                 sampling_rate_hz=self._sampling_rate_hz,
-                data_notes=self._data_notes["dots-imu"][data_name],
+                data_notes=self._data_notes["dots_imu"][data_name],
                 timesteps_before_solidified=self._timesteps_before_solidified,
             )
 
-        self.add_stream(
-            device_name="dots-imu",
-            stream_name="timestamp",
+        self.add_channel(
+            bundle_name="dots_imu",
+            channel_name="timestamp",
             data_type="uint32",
-            sample_size=(self._num_joints,),
+            buf_len=buf_len,
+            sample_size=[self._num_joints],
             sampling_rate_hz=self._sampling_rate_hz,
-            data_notes=self._data_notes["dots-imu"]["timestamp"],
+            data_notes=self._data_notes["dots_imu"]["timestamp"],
         )
-        self.add_stream(
-            device_name="dots-imu",
-            stream_name="toa_s",
+        self.add_channel(
+            bundle_name="dots_imu",
+            channel_name="toa_s",
             data_type="float64",
-            sample_size=(self._num_joints,),
+            buf_len=buf_len,
+            sample_size=[self._num_joints],
             sampling_rate_hz=self._sampling_rate_hz,
-            data_notes=self._data_notes["dots-imu"]["toa_s"],
+            data_notes=self._data_notes["dots_imu"]["toa_s"],
         )
-        self.add_stream(
-            device_name="dots-imu",
-            stream_name="counter",
+        self.add_channel(
+            bundle_name="dots_imu",
+            channel_name="counter",
             data_type="uint32",
-            sample_size=(self._num_joints,),
+            buf_len=buf_len,
+            sample_size=[self._num_joints],
             sampling_rate_hz=self._sampling_rate_hz,
             is_measure_rate_hz=True,
-            data_notes=self._data_notes["dots-imu"]["counter"],
+            data_notes=self._data_notes["dots_imu"]["counter"],
         )
 
         if self._transmission_delay_period_s:
-            self.add_stream(
-                device_name="dots-connection",
-                stream_name="transmission_delay",
+            self.add_channel(
+                bundle_name="dots_connection",
+                channel_name="transmission_delay",
                 data_type="float32",
-                sample_size=(1,),
+                buf_len=buf_len,
+                sample_size=[1],
                 sampling_rate_hz=1.0 / self._transmission_delay_period_s,
-                data_notes=self._data_notes["dots-connection"]["transmission_delay"],
+                data_notes=self._data_notes["dots_connection"]["transmission_delay"],
             )
 
     def get_fps(self) -> dict[str, float | None]:
-        return {"dots-imu": super()._get_fps("dots-imu", "timestamp")}
+        return {"dots_imu": super()._get_fps("dots_imu", "counter")}
 
     def _define_data_notes(self) -> None:
         self._data_notes = {}
-        self._data_notes.setdefault("dots-imu", {})
-        self._data_notes.setdefault("dots-connection", {})
+        self._data_notes.setdefault("dots_imu", {})
+        self._data_notes.setdefault("dots_connection", {})
 
-        self._data_notes["dots-imu"]["acceleration"] = OrderedDict(
+        self._data_notes["dots_imu"]["acceleration"] = OrderedDict(
             [
                 (
                     "Description",
@@ -126,12 +133,12 @@ class DotsOemStream(Stream):
                 ),
                 ("Units", "meter/second^2"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["gyroscope"] = OrderedDict(
+        self._data_notes["dots_imu"]["gyroscope"] = OrderedDict(
             [
                 (
                     "Description",
@@ -139,12 +146,12 @@ class DotsOemStream(Stream):
                 ),
                 ("Units", "degree/second"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["magnetometer"] = OrderedDict(
+        self._data_notes["dots_imu"]["magnetometer"] = OrderedDict(
             [
                 ("Description", "Magnetometer reading in the [X,Y,Z] direction"),
                 (
@@ -153,33 +160,33 @@ class DotsOemStream(Stream):
                     "w.r.t. sensor local coordinate system",
                 ),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["quaternion"] = OrderedDict(
+        self._data_notes["dots_imu"]["quaternion"] = OrderedDict(
             [
                 ("Description", "Quaternion rotation vector [W,X,Y,Z]"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["euler"] = OrderedDict(
+        self._data_notes["dots_imu"]["euler"] = OrderedDict(
             [
                 (
                     "Description",
                     "Euler rotation vector [X,Y,Z], for roll, pitch, and yaw",
                 ),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["free_acceleration"] = OrderedDict(
+        self._data_notes["dots_imu"]["free_acceleration"] = OrderedDict(
             [
                 (
                     "Description",
@@ -188,24 +195,24 @@ class DotsOemStream(Stream):
                 ),
                 ("Units", "meter/second^2"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["dq"] = OrderedDict(
+        self._data_notes["dots_imu"]["dq"] = OrderedDict(
             [
                 (
                     "Description",
                     "Quaternion rotation increment vector [W,X,Y,Z] in the time window of sampling rate",
                 ),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["dv"] = OrderedDict(
+        self._data_notes["dots_imu"]["dv"] = OrderedDict(
             [
                 (
                     "Description",
@@ -214,12 +221,12 @@ class DotsOemStream(Stream):
                 ),
                 ("Units", "degree"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["timestamp"] = OrderedDict(
+        self._data_notes["dots_imu"]["timestamp"] = OrderedDict(
             [
                 (
                     "Description",
@@ -228,22 +235,22 @@ class DotsOemStream(Stream):
                 ),
                 ("Units", "microsecond in range [0, (2^32)-1]"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["toa_s"] = OrderedDict(
+        self._data_notes["dots_imu"]["toa_s"] = OrderedDict(
             [
                 ("Description", "Time of arrival of the packet w.r.t. system clock."),
                 ("Units", "seconds"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["status"] = OrderedDict(
+        self._data_notes["dots_imu"]["status"] = OrderedDict(
             [
                 (
                     "Description",
@@ -251,12 +258,12 @@ class DotsOemStream(Stream):
                 ),
                 ("Options", MOVELLA_STATUS_MASK),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-imu"]["counter"] = OrderedDict(
+        self._data_notes["dots_imu"]["counter"] = OrderedDict(
             [
                 (
                     "Description",
@@ -265,12 +272,12 @@ class DotsOemStream(Stream):
                 ),
                 ("Range", "[0, (2^32)-1]"),
                 (
-                    Stream.metadata_data_headings_key,
+                    DataContainer.metadata_data_headings_key,
                     list(self._device_mapping.values()),
                 ),
             ]
         )
-        self._data_notes["dots-connection"]["transmission_delay"] = OrderedDict(
+        self._data_notes["dots_connection"]["transmission_delay"] = OrderedDict(
             [
                 (
                     "Description",

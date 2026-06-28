@@ -25,6 +25,8 @@
 #
 # ############
 
+from typing import Optional
+
 from hermes.utils.types import LoggingSpec
 import numpy as np
 from collections import OrderedDict
@@ -33,7 +35,7 @@ from hermes.base.nodes.producer import Producer
 from hermes.utils.zmq_utils import PORT_BACKEND, PORT_SYNC_HOST, PORT_KILL
 from hermes.utils.time_utils import get_time
 
-from hermes.dots.oem.stream import DotsOemStream
+from hermes.dots.oem.data_container import DotsOemDataContainer
 from hermes.dots.oem.handler import MOVELLA_PAYLOAD_MODE, MovellaFacade
 
 
@@ -48,19 +50,20 @@ class DotsOemProducer(Producer):
         device_mapping: dict[str, str],
         mac_mapping: dict[str, str],
         master_device: str,
-        sampling_rate_hz: int = 60,
-        num_joints: int = 5,
-        is_sync_devices: bool = True,
-        logging_mode: str = "Euler",
-        is_enable_logging: bool = False,
-        timesteps_before_stale: int = 100,
-        payload_mode: str = "RateQuantitieswMag",
-        filter_profile: str = "General",
-        port_pub: str = PORT_BACKEND,
-        port_sync: str = PORT_SYNC_HOST,
-        port_killsig: str = PORT_KILL,
-        transmit_delay_sample_period_s: float = float("nan"),
-        timesteps_before_solidified: int = 0,
+        buf_len: Optional[int] = 6000,
+        sampling_rate_hz: Optional[int] = 60,
+        num_joints: Optional[int] = 5,
+        is_sync_devices: Optional[bool] = True,
+        logging_mode: Optional[str] = "Euler",
+        is_enable_logging: Optional[bool] = False,
+        timesteps_before_stale: Optional[int] = 100,
+        payload_mode: Optional[str] = "RateQuantitieswMag",
+        filter_profile: Optional[str] = "General",
+        port_pub: Optional[str] = PORT_BACKEND,
+        port_sync: Optional[str] = PORT_SYNC_HOST,
+        port_killsig: Optional[str] = PORT_KILL,
+        transmit_delay_sample_period_s: Optional[float] = float("nan"),
+        timesteps_before_solidified: Optional[int] = 0,
         **_
     ):
         # Initialize any state that the sensor needs.
@@ -81,8 +84,9 @@ class DotsOemProducer(Producer):
             ]
         )
 
-        stream_out_spec = {
+        data_out_spec = {
             "num_joints": self._num_joints,
+            "buf_len": buf_len,
             "sampling_rate_hz": sampling_rate_hz,
             "device_mapping": device_mapping,
             "payload_mode": payload_mode,
@@ -94,7 +98,7 @@ class DotsOemProducer(Producer):
         super().__init__(
             topic=topic,
             host_ip=host_ip,
-            stream_out_spec=stream_out_spec,
+            data_out_spec=data_out_spec,
             logging_spec=logging_spec,
             sampling_rate_hz=sampling_rate_hz,
             port_pub=port_pub,
@@ -104,8 +108,8 @@ class DotsOemProducer(Producer):
         )
 
     @classmethod
-    def create_stream(cls, stream_spec: dict) -> DotsOemStream:
-        return DotsOemStream(**stream_spec)
+    def create_data_container(cls, data_spec: dict) -> DotsOemDataContainer:
+        return DotsOemDataContainer(**data_spec)
 
     def _ping_device(self) -> None:
         return None
@@ -173,7 +177,7 @@ class DotsOemProducer(Producer):
                     data["counter"][id] = packet["counter"]
 
             tag: str = "%s.data" % self.topic
-            self._publish(tag, process_time_s=process_time_s, data={"dots-imu": data})
+            self._publish(tag, process_time_s=process_time_s, data={"dots_imu": data})
         elif not self._is_continue_capture:
             # If triggered to stop and no more available data, send empty 'END' packet and join.
             self._send_end_packet()

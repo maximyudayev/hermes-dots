@@ -27,7 +27,7 @@
 
 import queue
 import threading
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 import movelladot_pc_sdk as mdda
 from collections import OrderedDict
 
@@ -72,12 +72,12 @@ class MovellaFacade:
         mac_mapping: dict[str, str],
         master_device: str,
         sampling_rate_hz: int,
-        payload_mode: str = "RateQuantitieswMag",
-        logging_mode: str = "Euler",
-        filter_profile: str = "General",
-        is_sync_devices: bool = True,
-        is_enable_logging: bool = False,
-        timesteps_before_stale: int = 100,
+        payload_mode: Optional[str] = "RateQuantitieswMag",
+        logging_mode: Optional[str] = "Euler",
+        filter_profile: Optional[str] = "General",
+        is_sync_devices: Optional[bool] = True,
+        is_enable_logging: Optional[bool] = False,
+        timesteps_before_stale: Optional[int] = 100,
     ) -> None:
         self._is_all_discovered_queue = queue.Queue(maxsize=1)
         self._device_mapping = dict(zip(device_mapping.values(), device_mapping.keys()))
